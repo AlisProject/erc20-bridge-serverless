@@ -1,13 +1,82 @@
 version: 2.1
 
 references:
-    setup_remote_docker: &setup_remote_docker
-      setup_remote_docker:
-        version: 18.09.3
+  setup_remote_docker: &setup_remote_docker
+    setup_remote_docker:
+      version: 19.03.0
+  only_master: &only_master
+    filters:
+      branches:
+        only:
+          - master
+  production_steps: &production_steps
+    <<: *only_master
+    context: erc20bridge_production
+
+orbs:
+  aws-cli: circleci/aws-cli@0.1.13
+  slack: circleci/slack@3.2.0
+
+executors:
+  python3_7_1:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/python:3.7
+
+
+commands:
+  prepare-aws-cli:
+    description: 'AWS CLIを準備'
+    steps:
+      - aws-cli/install
+      - aws-cli/configure
+  prepare-common:
+    description: '全ジョブ共通の準備処理'
+    steps:
+      - checkout
+
+      - <<: *setup_remote_docker
+
+      - restore_cache:
+          keys:
+            - v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements_test.txt" }}
+            - v3-dependencies-{{ checksum "yarn.lock" }}
+            - v3-dependencies-
+
+      - run:
+          name: 'Setup yarn'
+          command: |
+            curl -sSL "https://nodejs.org/dist/v10.11.0/node-v10.11.0-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v10.11.0-linux-x64/bin/node
+            curl https://www.npmjs.com/install.sh | sudo bash
+            sudo npm install -g yarn@1.15.2
+
+      - run:
+          name: 'Install Node dependencies'
+          command: |
+            yarn install --frozen-lockfile
+
+      - run:
+          name: 'install Python dependencies'
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+            pip install -r requirements_test.txt
+
+      - save_cache:
+          name: 'Save cache: Python'
+          paths:
+            - ./venv
+          key: v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements_test.txt" }}
+
+      - save_cache:
+          name: 'Save cache: yarn'
+          paths:
+            - ./node_modules
+          key: v3-dependencies-{{ checksum "yarn.lock" }}
 
 jobs:
-  build:
-
+  test:
     docker:
       - image: circleci/python:3.7
       - image: bluszcz/bflocalstack-dynamodb-s3
@@ -19,44 +88,7 @@ jobs:
     working_directory: ~/repo
 
     steps:
-      - checkout
-      - <<: *setup_remote_docker
-      - restore_cache:
-          keys:
-          - v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements_test.txt" }}
-          - v3-dependencies-{{ checksum "yarn.lock" }}
-          - v3-dependencies-
-
-      - run:
-          name: Setup yarn
-          command: |
-            curl -sSL "https://nodejs.org/dist/v10.11.0/node-v10.11.0-linux-x64.tar.xz" | sudo tar --strip-components=2 -xJ -C /usr/local/bin/ node-v10.11.0-linux-x64/bin/node
-            curl https://www.npmjs.com/install.sh | sudo bash
-            sudo npm install -g yarn@1.15.2
-
-      - run:
-          name: Install Node dependencies
-          command: |
-            yarn install --frozen-lockfile
-
-      - run:
-          name: install dependencies
-          command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-            pip install -r requirements_test.txt
-
-      - save_cache:
-          paths:
-            - ./venv
-          key: v3-dependencies-{{ checksum "requirements.txt" }}-{{ checksum "requirements_test.txt" }}
-
-      - save_cache:
-          name: Save cache yarn
-          paths:
-            - ./node_modules
-          key: v3-dependencies-{{ checksum "yarn.lock" }}
+      - prepare-common
 
       - run:
           name: run checkstyle for python code
@@ -76,21 +108,52 @@ jobs:
             . venv/bin/activate
             yarn test
 
-#      - run:
-#          name: make deploy package
-#          command: |
-#            if [ $ALIS_APP_ID ]; then
-#              docker image build --tag deploy-image .
-#              docker container run -it --name deploy-container deploy-image
-#              docker container cp deploy-container:/workdir/vendor-package .
-#              . venv/bin/activate
-#              python make_deploy_zip.py
-#            fi
-#
-#      - run:
-#          name: run deploy
-#          command: |
-#            if [ $ALIS_APP_ID ]; then
-#              . venv/bin/activate
-#              ./deploy_api.sh
-#            fi
+  deploy:
+    executor: python3_7_1
+    steps:
+      - prepare-common
+
+      - prepare-aws-cli
+
+      - deploy:
+          name: 'deployment'
+          command: |
+            . venv/bin/activate
+            yarn deploy
+
+  notify-to-slack-for-approval:
+    executor: python3_7_1
+    steps:
+      - slack/approval:
+          message: "本番環境へのデプロイを承認してください"
+          color: "#F5E911"
+
+
+workflows:
+  staging-and-others:
+    jobs:
+      - test
+
+      # ステージング環境へのデプロイ
+      - deploy:
+          name: deploy-staging
+          <<: *only_master
+          context: erc20bridge_staging
+          requires:
+            - test
+
+
+  # 本番環境へのデプロイ(承認処理付き)
+  production:
+    jobs:
+      - notify-to-slack-for-approval:
+          <<: *production_steps
+      - approval:
+          <<: *production_steps
+          type: approval
+
+      - deploy:
+          name: deploy-production
+          <<: *production_steps
+          requires:
+            - approval
