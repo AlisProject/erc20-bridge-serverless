@@ -220,9 +220,13 @@ resources:
 # Custom settings
 custom:
   # serverless-python-requirements
+  # http://bit.ly/2YkYgaK
   pythonRequirements:
-    dockerizePip: true
+    dockerizePip: ${self:custom.isCI.${env:CI}}
     layer: true
+  isCI:
+    true: false
+    false: true
 
   # serverless-plugin-aws-alerts
   alerts:
