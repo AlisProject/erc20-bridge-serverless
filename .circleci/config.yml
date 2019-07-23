@@ -3,7 +3,7 @@ version: 2.1
 references:
   setup_remote_docker: &setup_remote_docker
     setup_remote_docker:
-      version: 19.03.0
+      version: 18.09.3
   only_master: &only_master
     filters:
       branches:
