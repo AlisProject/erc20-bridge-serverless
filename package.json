@@ -13,7 +13,8 @@
   "scripts": {
     "deploy": "./node_modules/serverless/bin/serverless deploy",
     "destroy": "./node_modules/serverless/bin/serverless remove",
-    "test": "python -m unittest discover -v"
+    "test": "python -m unittest discover -v",
+    "cilint": "circleci config validate -c .circleci/config.yml"
   },
   "devDependencies": {}
 }
