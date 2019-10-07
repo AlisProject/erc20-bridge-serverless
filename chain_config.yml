@@ -3,7 +3,7 @@ public:
   rpcUrl: ${ssm:${env:ALIS_APP_ID}ssmPublicChainOperationUrl}
   bridgeContractAddress: ${ssm:${env:ALIS_APP_ID}ssmPublicChainBridgeAddress}
   gas: 200000
-  gasPrice: 35000000000
+  gasPrice: 20000000000
 
 # Private chain
 private:
