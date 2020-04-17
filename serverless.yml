@@ -2,7 +2,7 @@
 service: erc20-bridge-serverless
 
 # Serverless framework version
-frameworkVersion: "=1.40.0"
+frameworkVersion: ">=1.67.3 <2.0.0"
 
 # Provider
 provider:
