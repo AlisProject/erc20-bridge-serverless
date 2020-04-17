@@ -6,9 +6,10 @@
   "author": "Go Hayakawa <go.hayakawa@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "serverless": "1.40.0",
-    "serverless-plugin-aws-alerts": "^1.2.4",
-    "serverless-python-requirements": "^4.3.0"
+    "serverless": "^1.67.3",
+    "serverless-plugin-aws-alerts": "^1.4.0",
+    "serverless-python-requirements": "^5.1.0",
+    "yarn": "^1.22.4"
   },
   "scripts": {
     "deploy": "./node_modules/serverless/bin/serverless deploy",
