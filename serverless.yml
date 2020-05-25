@@ -116,7 +116,7 @@ functions:
     # Function specific environments
     environment:
       PUBLIC_CHAIN_GAS: ${file(./chain_config.yml):public.gas}
-      PUBLIC_CHAIN_GAS_PRICE: ${file(./chain_config.yml):public.gasPrice}
+      PUBLIC_CHAIN_MAX_GAS_PRICE: ${file(./chain_config.yml):public.maxGasPrice}
 
   retryDeposit:
     handler: src/handlers/retry_deposit.handler

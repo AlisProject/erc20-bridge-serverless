@@ -7,7 +7,8 @@ CHAIN_CONFIG = {
     'chainRpcUrlTo': 'http://example.com',
     'bridgeContractAddressTo': '0x' + 'b' * 40,
     'gas': '5500000',
-    'gasPrice': '1000000000'
+    'gasPrice': '1000000000',
+    'maxGasPrice': '5000000000'
 }
 
 PRIVATE_KEY = "0x" + "c" * 64

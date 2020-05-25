@@ -12,10 +12,12 @@ class TestHelper(TestCase):
         os.environ['PUBLIC_CHAIN_BRIDGE_CONTRACT_ADDRESS'] = '0x' + 'a' * 40
         os.environ['PUBLIC_CHAIN_GAS'] = '100'
         os.environ['PUBLIC_CHAIN_GAS_PRICE'] = '10000'
+        os.environ['PUBLIC_CHAIN_MAX_GAS_PRICE'] = '50000'
         os.environ['PRIVATE_CHAIN_RPC_URL'] = 'http://example2.com'
         os.environ['PRIVATE_CHAIN_BRIDGE_CONTRACT_ADDRESS'] = '0x' + 'b' * 40
         os.environ['PRIVATE_CHAIN_GAS'] = '200'
         os.environ['PRIVATE_CHAIN_GAS_PRICE'] = '20000'
+        os.environ['PRIVATE_CHAIN_MAX_GAS_PRICE'] = '60000'
 
         # Execute load_chain_config (for Deposit)
         deposit_config = helper.load_chain_config(True)
@@ -30,7 +32,8 @@ class TestHelper(TestCase):
             'bridgeContractAddressTo':
                 os.environ['PRIVATE_CHAIN_BRIDGE_CONTRACT_ADDRESS'],
             'gas': os.environ['PRIVATE_CHAIN_GAS'],
-            'gasPrice': os.environ['PRIVATE_CHAIN_GAS_PRICE']
+            'gasPrice': os.environ['PRIVATE_CHAIN_GAS_PRICE'],
+            'maxGasPrice': os.environ['PRIVATE_CHAIN_MAX_GAS_PRICE']
         })
 
         # Execute load_chain_config (for Withdraw)
@@ -46,7 +49,8 @@ class TestHelper(TestCase):
             'bridgeContractAddressTo':
                 os.environ['PUBLIC_CHAIN_BRIDGE_CONTRACT_ADDRESS'],
             'gas': os.environ['PUBLIC_CHAIN_GAS'],
-            'gasPrice': os.environ['PUBLIC_CHAIN_GAS_PRICE']
+            'gasPrice': os.environ['PUBLIC_CHAIN_GAS_PRICE'],
+            'maxGasPrice': os.environ['PUBLIC_CHAIN_MAX_GAS_PRICE']
         })
 
     @patch('boto3.client')

@@ -4,6 +4,7 @@ public:
   bridgeContractAddress: ${ssm:${env:ALIS_APP_ID}ssmPublicChainBridgeAddress}
   gas: 200000
   gasPrice: 35000000000
+  maxGasPrice: 80000000000
 
 # Private chain
 private:
@@ -11,3 +12,4 @@ private:
   bridgeContractAddress: ${ssm:${env:ALIS_APP_ID}ssmPrivateChainBridgeAddress}
   gas: 200000 # NOTICE プライベートチェーン側もgasは指定しないとトランザクションに失敗する
   gasPrice: 0
+  maxGasPrice: 0

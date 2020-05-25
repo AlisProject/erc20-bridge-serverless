@@ -23,15 +23,16 @@ class TestContract(TestCase):
         recipient = '0x' + 'b' * 40
         amount = 100
         tx_hash = '0x' + 'c' * 64
-        gas = 5500000
-        gas_price = 1000000000
+        gas = '5500000'
+        gas_price = '1000000000'
+        max_gas_price = '5000000000'
         nonce = 10
         web3 = Web3(provider)
 
         # Execute apply_relay
         contract.apply_relay(provider, contract_address, private_key,
                              sender, recipient, amount, tx_hash,
-                             gas, gas_price, nonce)
+                             gas, gas_price, max_gas_price, nonce)
 
         # Assert call
         mock_applyRelay.return_value \
@@ -45,11 +46,75 @@ class TestContract(TestCase):
         mock_applyRelay.return_value.functions \
             .applyRelay.return_value.buildTransaction.assert_called_once_with({
                 'nonce': nonce,
-                'gas': hex(gas),
-                'gasPrice': hex(gas_price)
+                'gas': hex(int(gas)),
+                'gasPrice': hex(int(gas_price))
             })
 
         mock_sendRawTransaction.assert_called()
+
+    @patch('web3.eth.Account.signTransaction')
+    @patch('web3.eth.Eth.sendRawTransaction')
+    @patch('web3.eth.Eth.contract')
+    @patch('web3.eth.Eth.gasPrice', 9999)
+    def test_correct_gas_price_when_gas_price_not_specified(
+            self, mock_contract, mock_sendRawTransaction,
+            mock_signTransaction):
+        gas = '5500000'
+        nonce = 10
+
+        # Execute apply_relay
+        contract.apply_relay(
+            Web3.HTTPProvider('http://example.com'),
+            helper.CHAIN_CONFIG['bridgeContractAddressTo'],
+            helper.PRIVATE_KEY,
+            '0x' + 'a' * 40,
+            '0x' + 'b' * 40,
+            100,
+            '0x' + 'c' * 64,
+            gas,
+            '',  # Gas Price
+            '10000',  # Max Gas Price
+            nonce)
+
+        # Assert call
+        mock_contract.return_value.functions \
+            .applyRelay.return_value.buildTransaction.assert_called_once_with({
+                'nonce': nonce,
+                'gas': hex(int(gas)),
+                'gasPrice': hex(9999)
+            })
+
+    @patch('web3.eth.Account.signTransaction')
+    @patch('web3.eth.Eth.sendRawTransaction')
+    @patch('web3.eth.Eth.contract')
+    @patch('web3.eth.Eth.gasPrice', 10001)
+    def test_correct_gas_price_when_gas_price_over_max_value(
+            self, mock_contract, mock_sendRawTransaction,
+            mock_signTransaction):
+        gas = '5500000'
+        nonce = 10
+
+        # Execute apply_relay
+        contract.apply_relay(
+            Web3.HTTPProvider('http://example.com'),
+            helper.CHAIN_CONFIG['bridgeContractAddressTo'],
+            helper.PRIVATE_KEY,
+            '0x' + 'a' * 40,
+            '0x' + 'b' * 40,
+            100,
+            '0x' + 'c' * 64,
+            gas,
+            '',  # Gas Price
+            '10000',  # Max Gas Price
+            nonce)
+
+        # Assert call
+        mock_contract.return_value.functions \
+            .applyRelay.return_value.buildTransaction.assert_called_once_with({
+                'nonce': nonce,
+                'gas': hex(int(gas)),
+                'gasPrice': hex(10000)
+            })
 
     @patch('web3.eth.Eth.getLogs')
     def test_ok_get_relay_event_logs(self, mock_getLogs):
