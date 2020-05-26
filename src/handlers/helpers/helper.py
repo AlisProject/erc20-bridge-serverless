@@ -25,7 +25,8 @@ def load_chain_config(is_deposit):
             'gas': (os.environ['PRIVATE_CHAIN_GAS']
                     if 'PRIVATE_CHAIN_GAS' in os.environ else ''),
             'gasPrice': (os.environ['PRIVATE_CHAIN_GAS_PRICE']
-                         if 'PRIVATE_CHAIN_GAS_PRICE' in os.environ else '')
+                         if 'PRIVATE_CHAIN_GAS_PRICE' in os.environ else ''),
+            'maxGasPrice': os.environ.get('PRIVATE_CHAIN_MAX_GAS_PRICE', '')
         }
     else:
         # 出金時
@@ -40,7 +41,8 @@ def load_chain_config(is_deposit):
             'gas': (os.environ['PUBLIC_CHAIN_GAS']
                     if 'PUBLIC_CHAIN_GAS' in os.environ else ''),
             'gasPrice': (os.environ['PUBLIC_CHAIN_GAS_PRICE']
-                         if 'PUBLIC_CHAIN_GAS_PRICE' in os.environ else '')
+                         if 'PUBLIC_CHAIN_GAS_PRICE' in os.environ else ''),
+            'maxGasPrice': os.environ.get('PUBLIC_CHAIN_MAX_GAS_PRICE', '')
         }
 
 

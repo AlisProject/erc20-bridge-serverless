@@ -51,6 +51,7 @@ class TestRetryApplyRelay(TestCase):
                 int(relay_event_log['data'][2:66], 16),
                 relay_event_log['transactionHash'].hex(),
                 helper.CHAIN_CONFIG['gas'], helper.CHAIN_CONFIG['gasPrice'],
+                helper.CHAIN_CONFIG['maxGasPrice'],
                 nonce
             ))
             nonce += 1

@@ -37,6 +37,7 @@ def execute(chain_config, private_key, relay_transactions):
                 parsed_event['sender'], parsed_event['recipient'],
                 parsed_event['amount'], parsed_event['txHash'],
                 chain_config['gas'], chain_config['gasPrice'],
+                chain_config['maxGasPrice'],
                 nonce)
 
             # nonceのカウントアップ

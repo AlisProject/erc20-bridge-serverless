@@ -7,7 +7,8 @@ with open('abi/Bridge.json', 'rt') as file:
 
 
 def apply_relay(provider, contract_address, private_key, sender,
-                recipient, amount, txHash, gas, gasPrice, nonce):
+                recipient, amount, txHash, gas, gas_price, max_gas_price,
+                nonce):
     """ applyRelayの実行
     """
     if BRIDGE_ABI is None:
@@ -18,13 +19,16 @@ def apply_relay(provider, contract_address, private_key, sender,
     contract = web3.eth.contract(
         web3.toChecksumAddress(contract_address), abi=BRIDGE_ABI)
 
+    if len(gas_price) <= 0:
+        gas_price = min(web3.eth.gasPrice, int(max_gas_price))
+
     transaction = contract.functions.applyRelay(
         web3.toChecksumAddress(sender),
         web3.toChecksumAddress(recipient),
         amount, txHash).buildTransaction({
             'nonce': nonce,
             'gas': hex(int(gas)),
-            'gasPrice': hex(int(gasPrice))
+            'gasPrice': hex(int(gas_price))
         })
 
     signed_transaction = web3.eth.account.signTransaction(

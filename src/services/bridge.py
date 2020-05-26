@@ -65,6 +65,7 @@ def execute(chain_config, dynamo_table, private_key):
                 parsed_event['txHash'],
                 chain_config['gas'],
                 chain_config['gasPrice'],
+                chain_config['maxGasPrice'],
                 nonce)
 
             # nonceのカウントアップ
