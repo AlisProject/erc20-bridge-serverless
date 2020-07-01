@@ -8,6 +8,7 @@
   "devDependencies": {
     "serverless": "^1.67.3",
     "serverless-plugin-aws-alerts": "^1.4.0",
+    "serverless-pseudo-parameters": "^2.5.0",
     "serverless-python-requirements": "^5.1.0",
     "yarn": "^1.22.4"
   },
